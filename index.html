@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#d71920">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PLAY HUB">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLAY HUB</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#111;color:#fff}
+header{padding:18px 16px;background:#171717;position:sticky;top:0;z-index:5;border-bottom:1px solid #292929}
+h1{margin:0;font-size:25px;color:#ff3030}.sub{color:#aaa;font-size:12px;margin-top:4px}
+nav{display:flex;gap:7px;overflow:auto;padding:10px;background:#171717;position:sticky;top:73px;z-index:4}
+nav button{white-space:nowrap;border:0;border-radius:12px;padding:10px 13px;background:#272727;color:#ddd}
+nav button.active{background:#d71920;color:#fff}
+main{padding:14px;max-width:650px;margin:auto}.page{display:none}.page.active{display:block}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}.card{background:#1d1d1d;border:1px solid #292929;border-radius:15px;padding:15px}
+.big{font-size:24px;font-weight:bold;margin-top:6px}.muted{color:#999;font-size:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.item{background:#202020;border:1px solid #303030;border-radius:14px;padding:13px}
+.item button,.primary{width:100%;margin-top:8px;border:0;border-radius:10px;padding:11px;background:#d71920;color:white;font-weight:bold}
+.secondary{background:#303030!important}.price{font-weight:bold;margin-top:5px;color:#ff6464}
+select,input{width:100%;padding:12px;border-radius:10px;border:1px solid #383838;background:#202020;color:#fff;margin:5px 0 10px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.list{margin-top:12px}.sale{background:#1c1c1c;border-radius:12px;padding:12px;margin:7px 0;display:flex;justify-content:space-between}
+.danger{background:#4a1616!important}.notice{background:#252525;padding:12px;border-radius:12px;color:#bbb;margin:10px 0}
+</style>
+</head>
+<body>
+<header><h1>PLAY HUB 🎮</h1><div class="sub">نظام تسيير المحل — النسخة الأولى</div></header>
+<nav>
+<button class="active" onclick="show('home',this)">الرئيسية</button>
+<button onclick="show('games',this)">🎮 الألعاب</button>
+<button onclick="show('sales',this)">🥤 المبيعات</button>
+<button onclick="show('stock',this)">📦 المخزون</button>
+<button onclick="show('report',this)">📊 التقرير</button>
+</nav>
+
+<main>
+<section id="home" class="page active">
+<h2>ملخص اليوم</h2>
+<div class="cards">
+<div class="card"><div class="muted">مداخيل الألعاب</div><div class="big" id="gameTotal">0 دج</div></div>
+<div class="card"><div class="muted">مبيعات المشروبات</div><div class="big" id="saleTotal">0 دج</div></div>
+<div class="card"><div class="muted">إجمالي اليوم</div><div class="big" id="dayTotal">0 دج</div></div>
+<div class="card"><div class="muted">عدد العمليات</div><div class="big" id="countTotal">0</div></div>
+</div>
+<div class="notice">هذه نسخة أولى تعمل محلياً على الهاتف وتحفظ البيانات في المتصفح.</div>
+</section>
+
+<section id="games" class="page">
+<h2>🎮 تسجيل مباراة</h2>
+<div class="item">
+<label>الجهاز</label>
+<select id="device"><option>PS4 Slim</option><option>PS4 Pro</option><option>PS4 Fat</option><option>Xbox</option><option>Billiard</option></select>
+<label>اللعبة / النوع</label>
+<select id="gameType"><option value="ps2">مباراة ×2 — 500 دج</option><option value="ps4">مباراة ×4 — 1000 دج</option></select>
+<button class="primary" onclick="addGame()">تسجيل العملية</button>
+</div>
+<div class="list" id="gameList"></div>
+</section>
+
+<section id="sales" class="page">
+<h2>🥤 المبيعات</h2>
+<div class="grid" id="products"></div>
+<div class="list" id="salesList"></div>
+</section>
+
+<section id="stock" class="page">
+<h2>📦 المخزون</h2>
+<div class="notice">أدخل الكمية الحالية لكل منتج. أسعار الشراء غير مضافة بعد لأنها لم تُرسل.</div>
+<div id="stockList"></div>
+</section>
+
+<section id="report" class="page">
+<h2>📊 تقرير اليوم</h2>
+<div class="card">
+<p>الألعاب: <b id="rGame">0 دج</b></p>
+<p>المبيعات: <b id="rSale">0 دج</b></p>
+<hr>
+<p>الإجمالي: <b id="rTotal">0 دج</b></p>
+</div>
+<button class="primary danger" onclick="clearToday()">مسح عمليات اليوم</button>
+</section>
+</main>
+
+<script>
+const products=[
+["Canet",1000],["Izem plastique",900],["Choueps",800],["Coca",700],
+["Jus",700],["Daili",300],["Joy",150],["Candi choco kbir",600],
+["Candia choco sghir",400],["Jus hlib",800],["Madlen",600],["Gatou",400],
+["Dolce sol",500],["Dolce",600]
+];
+let games=JSON.parse(localStorage.games||"[]"), sales=JSON.parse(localStorage.sales||"[]"),
+stock=JSON.parse(localStorage.stock||"{}");
+products.forEach(p=>{if(stock[p[0]]===undefined)stock[p[0]]=0});
+
+function show(id,btn){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');render()}
+function addGame(){
+ let d=document.getElementById('device').value,t=document.getElementById('gameType').value;
+ let price=t==="ps2"?500:1000;
+ if(d==="Billiard"){price=700;t="Billiard — مباراة";} else if(d==="Xbox"){price=t==="ps2"?300:500;t=t==="ps2"?"Blur ×2":"Blur ×4";}
+ games.push({d,t,price,date:new Date().toISOString()});save();render()
+}
+function addSale(name,price){sales.push({name,price,date:new Date().toISOString()});stock[name]=Math.max(0,(stock[name]||0)-1);save();render()}
+function save(){localStorage.games=JSON.stringify(games);localStorage.sales=JSON.stringify(sales);localStorage.stock=JSON.stringify(stock)}
+function today(a){let d=new Date(),x=new Date(a);return d.toDateString()===x.toDateString()}
+function render(){
+ let tg=games.filter(x=>today(x.date)).reduce((a,x)=>a+x.price,0),ts=sales.filter(x=>today(x.date)).reduce((a,x)=>a+x.price,0);
+ document.getElementById('gameTotal').textContent=tg+" دج";document.getElementById('saleTotal').textContent=ts+" دج";
+ document.getElementById('dayTotal').textContent=(tg+ts)+" دج";document.getElementById('countTotal').textContent=games.filter(x=>today(x.date)).length+sales.filter(x=>today(x.date)).length;
+ document.getElementById('rGame').textContent=tg+" دج";document.getElementById('rSale').textContent=ts+" دج";document.getElementById('rTotal').textContent=(tg+ts)+" دج";
+ document.getElementById('products').innerHTML=products.map(p=>`<div class="item"><b>${p[0]}</b><div class="price">${p[1]} دج</div><button onclick="addSale('${p[0].replaceAll("'","\\'")}',${p[1]})">+ بيع</button></div>`).join("");
+ document.getElementById('gameList').innerHTML=games.filter(x=>today(x.date)).slice().reverse().map(x=>`<div class="sale"><span>🎮 ${x.d} — ${x.t}</span><b>${x.price} دج</b></div>`).join("")||'<div class="muted">لا توجد مباريات اليوم</div>';
+ document.getElementById('salesList').innerHTML=sales.filter(x=>today(x.date)).slice().reverse().map(x=>`<div class="sale"><span>🥤 ${x.name}</span><b>${x.price} دج</b></div>`).join("")||'<div class="muted">لا توجد مبيعات اليوم</div>';
+ document.getElementById('stockList').innerHTML=products.map(p=>`<div class="sale"><span>${p[0]}</span><span><input style="width:80px;margin:0" type="number" min="0" value="${stock[p[0]]}" onchange="stock['${p[0].replaceAll("'","\\'")}']=+this.value;save()"></span></div>`).join("");
+}
+function clearToday(){if(confirm("مسح عمليات اليوم؟")){games=games.filter(x=>!today(x.date));sales=sales.filter(x=>!today(x.date));save();render()}}
+render();
+</script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}</script></body>
+</html>
